@@ -36,6 +36,9 @@ namespace Evolutionary
         private delegate bool ProgressWithCandidateFunctionPointer(EngineProgress progress, CandidateSolution<T,S> bestThisGeneration);
         ProgressWithCandidateFunctionPointer myProgressWithCandidateFunction;
 
+        private delegate bool ProgressWithCandidateFunctionPointerAndGeneration(EngineProgress progress, CandidateSolution<T, S> bestInThisGeneration, List<CandidateSolution<T, S>> thisGeneration);
+        ProgressWithCandidateFunctionPointerAndGeneration myProgressWithCandidateAndGenerationFunction;
+
         private List<CandidateSolution<T,S>> currentGeneration = new List<CandidateSolution<T,S>>();
         private double totalFitness = 0;
 
@@ -175,6 +178,9 @@ namespace Evolutionary
                     myProgressFunction(progress);
                 if (myProgressWithCandidateFunction != null)
                     keepGoing = myProgressWithCandidateFunction(progress, bestTreeThisGeneration);
+                if (myProgressWithCandidateAndGenerationFunction != null)
+                    keepGoing = myProgressWithCandidateAndGenerationFunction(progress, bestTreeThisGeneration, currentGeneration);
+
                 if (!keepGoing) break;  // user signalled to end looping
 
                 // termination conditions
@@ -455,6 +461,11 @@ namespace Evolutionary
         public void AddProgressFunction(Func<EngineProgress, CandidateSolution<T, S>, bool> progressFunction)
         {
             myProgressWithCandidateFunction = new ProgressWithCandidateFunctionPointer(progressFunction);
+        }
+
+        public void AddProgressFunction(Func<EngineProgress, CandidateSolution<T, S>, List<CandidateSolution<T, S>>, bool> progressFunction)
+        {
+            myProgressWithCandidateAndGenerationFunction = new ProgressWithCandidateFunctionPointerAndGeneration(progressFunction);
         }
     }
 }
